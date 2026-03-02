@@ -4,6 +4,9 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import About from './pages/About';
+import Tours from './pages/Tours';
+import Contact from './pages/Contact';
+import Blog from './pages/Blog';
 
 function App() {
   return (
@@ -11,11 +14,13 @@ function App() {
       {/* এখানে একবার থাকলে সব পেজেই দেখাবে */}
       <Navbar /> 
       
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        {/* অ্যাডমিন প্যানেলের জন্য আলাদা লেআউট লাগলে সেটা পরে হ্যান্ডেল করা যাবে */}
-      </Routes>
+     <Routes>
+  <Route path="/" element={<Home />} />
+  <Route path="/about" element={<About />} />
+  <Route path="/tours" element={<Tours />} />
+  <Route path="/blog" element={<Blog />} />
+  <Route path="/contact" element={<Contact />} />
+</Routes>
 
       <Footer />
     </Router>

@@ -1,1 +1,15 @@
 @import "tailwindcss";
+
+
+
+/* index.css এ যোগ করুন */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #fb923c; /* Orange-400 */
+  border-radius: 10px;
+}
