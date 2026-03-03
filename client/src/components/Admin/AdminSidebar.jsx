@@ -15,8 +15,8 @@ const AdminSidebar = () => {
 
   const menuItems = [
     { name: 'Dashboard', path: '/admin/dashboard', icon: <MdDashboard /> },
-    { name: 'Manage Packages', path: '/admin/packages', icon: <MdCardTravel /> },
-    { name: 'View Bookings', path: '/admin/bookings', icon: <MdEventAvailable /> },
+    { name: 'Manage Packages', path: '/admin/manage-packages', icon: <MdCardTravel /> },
+    { name: 'View Bookings', path: '/admin/view-bookings', icon: <MdEventAvailable /> },
     { name: 'User List', path: '/admin/users', icon: <MdPeople /> },
   ];
 
