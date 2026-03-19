@@ -1,22 +1,42 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom'; // useNavigate ইম্পোর্ট করুন
 import { 
   MdDashboard, 
   MdCardTravel, 
   MdEventAvailable, 
   MdPeople, 
   MdArrowBack, 
-  MdLogout 
+  MdLogout,
+  MdArticle, 
+  MdMessage  
 } from 'react-icons/md';
 
 const AdminSidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate(); // নেভিগেশন হুক কল করুন
+  
   const isActive = (path) => location.pathname === path;
+
+  // লগআউট হ্যান্ডলার
+  const handleSignOut = () => {
+    // ১. লোকাল স্টোরেজ থেকে সব ডাটা মুছে ফেলা
+    localStorage.removeItem('user'); 
+    localStorage.removeItem('adminUser'); // আপনার সিস্টেমে অন্য নামে থাকলে সেটিও দিন
+    localStorage.removeItem('adminToken');
+    
+    // ২. সেশন ক্লিয়ার করার জন্য চাইলে পুরোপুরি ক্লিয়ার করতে পারেন
+    // localStorage.clear(); 
+
+    // ৩. লগইন পেজে পাঠিয়ে দেওয়া
+    navigate('/admin/login'); // আপনার লগইন রাউট অনুযায়ী পাথটি দিন
+  };
 
   const menuItems = [
     { name: 'Dashboard', path: '/admin/dashboard', icon: <MdDashboard /> },
     { name: 'Manage Packages', path: '/admin/manage-packages', icon: <MdCardTravel /> },
     { name: 'View Bookings', path: '/admin/view-bookings', icon: <MdEventAvailable /> },
+    { name: 'Manage Blogs', path: '/admin/manage-blogs', icon: <MdArticle /> },
+    { name: 'Contact Messages', path: '/admin/messages', icon: <MdMessage /> },
     { name: 'User List', path: '/admin/users', icon: <MdPeople /> },
   ];
 
@@ -29,7 +49,7 @@ const AdminSidebar = () => {
         <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Control Panel</p>
       </div>
 
-      <nav className="flex-1 px-4 py-8 space-y-2">
+      <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto">
         {menuItems.map((item) => (
           <Link
             key={item.name}
@@ -50,7 +70,10 @@ const AdminSidebar = () => {
         <Link to="/" className="flex items-center gap-4 px-4 py-3 text-sm font-bold hover:text-orange-400 transition">
           <MdArrowBack /> Back to Website
         </Link>
-        <button className="w-full flex items-center gap-4 px-4 py-3 text-sm font-bold text-red-400 hover:bg-red-500/10 rounded-xl transition">
+        <button 
+          onClick={handleSignOut} // এখানে ফাংশনটি কল করা হয়েছে
+          className="w-full flex items-center gap-4 px-4 py-3 text-sm font-bold text-red-400 hover:bg-red-500/10 rounded-xl transition"
+        >
           <MdLogout /> Sign Out
         </button>
       </div>
