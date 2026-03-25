@@ -1,35 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminSidebar from '../../components/Admin/AdminSidebar';
 import Swal from 'sweetalert2';
+import axios from 'axios';
 import { 
-  MdCached, 
-  MdCheckCircleOutline, 
-  MdOutlinePendingActions, 
   MdFileDownload,
   MdDeleteOutline,
   MdChevronLeft,
-  MdChevronRight 
+  MdChevronRight,
+  MdRefresh 
 } from 'react-icons/md';
 
 const ViewBookings = () => {
-  const [bookings, setBookings] = useState([
-    { id: "#TR-9902", customer: "John Doe", email: "john@example.com", tour: "Italy – Santa Cruza", date: "Oct 24, 2026", status: "Confirmed", amount: "$1,200" },
-    { id: "#TR-9903", customer: "Sarah Khan", email: "sarah@mail.com", tour: "Bali – Uluwatu", date: "Nov 12, 2026", status: "Pending", amount: "$850" },
-    { id: "#TR-9905", customer: "Rakib Chen", email: "rakib@agency.com", tour: "Japan – Kyoto", date: "Dec 05, 2026", status: "Pending", amount: "$2,100" },
-    { id: "#TR-9906", customer: "Alex Root", email: "alex@test.com", tour: "Paris – Eiffel", date: "Jan 10, 2027", status: "Confirmed", amount: "$1,500" },
-  ]);
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // --- 1. Fetch Data from Backend ---
+  const fetchBookings = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get("http://localhost:5000/api/bookings");
+      setBookings(res.data);
+    } catch (err) {
+      console.error("Fetch Error:", err);
+      // Data load na holeo loading false kora dorkar
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBookings();
+  }, []);
 
   // --- Pagination Logic ---
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 3; // প্রতি পেজে কয়টি দেখাবে
+  const itemsPerPage = 3; 
   const totalPages = Math.ceil(bookings.length / itemsPerPage);
   
-  // বর্তমান পেজের ডাটা আলাদা করা
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = bookings.slice(indexOfFirstItem, indexOfLastItem);
 
-  // --- Delete Logic ---
+  // --- 2. Delete Logic (Backend Integration) ---
   const handleDelete = (id) => {
     Swal.fire({
       title: 'Are you sure?',
@@ -40,44 +52,37 @@ const ViewBookings = () => {
       cancelButtonColor: '#f87171',
       confirmButtonText: 'Yes, delete it!',
       customClass: { popup: 'rounded-[30px]' }
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        setBookings(bookings.filter(item => item.id !== id));
-        Swal.fire({
-          title: 'Deleted!',
-          icon: 'success',
-          timer: 1000,
-          showConfirmButton: false,
-          customClass: { popup: 'rounded-[30px]' }
-        });
+        try {
+          await axios.delete(`http://localhost:5000/api/bookings/delete/${id}`);
+          setBookings(bookings.filter(item => item.id !== id));
+          Swal.fire({
+            title: 'Deleted!',
+            icon: 'success',
+            timer: 1000,
+            showConfirmButton: false,
+            customClass: { popup: 'rounded-[30px]' }
+          });
+        } catch (err) {
+          Swal.fire('Error', 'Delete operation failed!', 'error');
+        }
       }
     });
   };
 
-  // --- Export CSV Logic (Fixed) ---
+  // --- 3. CSV Export Logic ---
   const handleExportCSV = () => {
     const headers = ["Order ID,Customer,Email,Tour,Date,Status,Amount"];
     const rows = bookings.map(item => 
-      `${item.id},${item.customer},${item.email},"${item.tour}",${item.date},${item.status},${item.amount.replace(/,/g, '')}`
+      `#TR-${9900 + item.id},${item.user_name},${item.user_email},"${item.package_title || 'N/A'}",${item.created_at},${item.status || 'Pending'},${item.price || '0'}`
     );
     
     const csvContent = "data:text/csv;charset=utf-8," + [headers, ...rows].join("\n");
-    const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "travlia_bookings.csv");
-    document.body.appendChild(link);
+    link.href = encodeURI(csvContent);
+    link.download = "travlia_bookings.csv";
     link.click();
-    document.body.removeChild(link);
-
-    Swal.fire({
-      toast: true,
-      position: 'top-end',
-      icon: 'success',
-      title: 'CSV Downloaded',
-      showConfirmButton: false,
-      timer: 2000
-    });
   };
 
   return (
@@ -91,9 +96,14 @@ const ViewBookings = () => {
             <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight uppercase">Reservations</h1>
             <p className="text-slate-500 font-medium mt-1">Manage customer booking records.</p>
           </div>
-          <button onClick={handleExportCSV} className="flex items-center gap-2 bg-white border border-slate-200 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-[2px] shadow-sm hover:bg-slate-900 hover:text-white transition-all group">
-            <MdFileDownload className="text-lg" /> Export CSV
-          </button>
+          <div className="flex gap-3">
+             <button onClick={fetchBookings} className="p-3 bg-white border border-slate-200 rounded-2xl hover:bg-slate-100 transition-all shadow-sm">
+                <MdRefresh className={`text-xl ${loading ? 'animate-spin' : ''}`} />
+             </button>
+             <button onClick={handleExportCSV} className="flex items-center gap-2 bg-white border border-slate-200 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-[2px] shadow-sm hover:bg-slate-900 hover:text-white transition-all group">
+               <MdFileDownload className="text-lg" /> Export CSV
+             </button>
+          </div>
         </div>
 
         {/* Table Container */}
@@ -110,30 +120,36 @@ const ViewBookings = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {currentItems.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-50/40 transition-colors group">
-                    <td className="px-8 py-6 text-xs font-bold text-slate-400">{item.id}</td>
-                    <td className="px-8 py-6">
-                      <p className="text-sm font-black text-slate-900">{item.customer}</p>
-                      <p className="text-[10px] text-slate-400 font-medium">{item.email}</p>
-                    </td>
-                    <td className="px-8 py-6">
-                      <p className="text-sm font-bold text-slate-700">{item.tour}</p>
-                      <p className="text-[10px] text-orange-500 font-black uppercase">{item.date}</p>
-                    </td>
-                    <td className="px-8 py-6 text-center">
-                      <button onClick={() => handleDelete(item.id)} className="p-3 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
-                        <MdDeleteOutline className="text-2xl" />
-                      </button>
-                    </td>
-                    <td className="px-8 py-6 text-right font-black text-slate-900">{item.amount}</td>
-                  </tr>
-                ))}
+                {loading ? (
+                  <tr><td colSpan="5" className="py-20 text-center font-bold text-slate-300 uppercase tracking-widest animate-pulse">Loading Reservations...</td></tr>
+                ) : (
+                  currentItems.map((item) => (
+                    <tr key={item.id} className="hover:bg-slate-50/40 transition-colors group">
+                      <td className="px-8 py-6 text-xs font-bold text-slate-400">#TR-{9900 + item.id}</td>
+                      <td className="px-8 py-6">
+                        <p className="text-sm font-black text-slate-900">{item.user_name}</p>
+                        <p className="text-[10px] text-slate-400 font-medium">{item.user_email}</p>
+                      </td>
+                      <td className="px-8 py-6">
+                        <p className="text-sm font-bold text-slate-700">{item.package_title || "Standard Tour"}</p>
+                        <p className="text-[10px] text-orange-500 font-black uppercase">
+                           {item.created_at ? new Date(item.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : "Oct 24, 2026"}
+                        </p>
+                      </td>
+                      <td className="px-8 py-6 text-center">
+                        <button onClick={() => handleDelete(item.id)} className="p-3 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
+                          <MdDeleteOutline className="text-2xl" />
+                        </button>
+                      </td>
+                      <td className="px-8 py-6 text-right font-black text-slate-900">${item.price || '1,200'}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
 
-          {/* --- New Pagination Section --- */}
+          {/* Pagination Section */}
           <div className="bg-slate-50/50 px-8 py-6 flex flex-col sm:flex-row justify-between items-center gap-4 border-t border-slate-100">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, bookings.length)} of {bookings.length} entries

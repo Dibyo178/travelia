@@ -19,3 +19,21 @@ exports.addBlog = (req, res) => {
         res.status(201).json({ message: "Blog added successfully" });
     });
 };
+
+// blogController.js
+exports.getBlogById = (req, res) => {
+    const { id } = req.params;
+    // Database query te 'id' column name ti check korun
+    const sql = "SELECT * FROM blogs WHERE id = ?"; 
+    
+    db.query(sql, [id], (err, result) => {
+        if (err) {
+            console.error("Database Error:", err);
+            return res.status(500).json(err);
+        }
+        if (result.length === 0) {
+            return res.status(404).json({ message: "Blog not found" });
+        }
+        res.status(200).json(result[0]); // Prothom row ti return korbe
+    });
+};

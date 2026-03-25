@@ -86,6 +86,17 @@ exports.updatePackage = (req, res) => {
     });
 };
 
+
+// packageController.js
+exports.getPackageById = (req, res) => {
+    const { id } = req.params;
+    // Table name oboshoy tour_packages hote hobe jodi apni sheta use koren
+    db.query("SELECT * FROM tour_packages WHERE id = ?", [id], (err, result) => {
+        if (err) return res.status(500).json(err);
+        if (result.length === 0) return res.status(404).json({ message: "Not found" });
+        res.status(200).json(result[0]);
+    });
+};
 // ৫. প্যাকেজ ডিলিট করা (ইমেজ সহ ডিলিট)
 exports.deletePackage = (req, res) => {
     const { id } = req.params;

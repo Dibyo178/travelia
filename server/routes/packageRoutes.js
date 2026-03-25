@@ -61,5 +61,6 @@ router.put('/update/:id', upload.single('image'), packageController.updatePackag
 
 // প্যাকেজ ডিলিট
 router.delete('/delete/:id', packageController.deletePackage);
-
+// packageRoutes.js (Backend)
+router.get('/:id', packageController.getPackageById);
 module.exports = router;

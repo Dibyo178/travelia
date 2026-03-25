@@ -22,6 +22,7 @@ import ForgotPassword from './pages/Admin/ForgotPassword';
 import UserList from './pages/Admin/UserList';
 import ManageBlogs from './pages/Admin/ManageBlogs';
 import AdminMessages from './pages/Admin/AdminMessages';
+import BlogDetails from './pages/BlogDetails';
 
 // ১. প্রটেক্টেড রাউট কম্পোনেন্ট (Admin-এর জন্য)
 const ProtectedRoute = ({ children }) => {
@@ -73,6 +74,7 @@ function App() {
           
           {/* ইউজার প্রোফাইল রাউট - এখানে সাধারণ নেভবার/ফুটার থাকবে */}
           <Route path="/profile" element={<Profile />} />
+          <Route path="/blog/:id" element={<BlogDetails />} />
 
           {/* প্যাকেজ ডিটেইলস */}
           <Route path="/package/:id" element={<PackageDetails />} />
