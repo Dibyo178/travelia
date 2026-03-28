@@ -13,7 +13,12 @@ const contactRoutes = require('./routes/contactRoutes');
 const app = express();
 
 // Middleware
-app.use(cors());
+
+app.use(cors({
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+}));
 app.use(express.json());
 
 // ১. Static Folder ডিক্লেয়ার করা (যাতে ফ্রন্টএন্ড থেকে ইমেজ এক্সেস করা যায়)

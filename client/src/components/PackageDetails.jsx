@@ -42,7 +42,7 @@ const handleBooking = async (e) => {
   console.log("Sending Package ID:", id); 
 
   const bookingData = {
-    package_id: id, // eiti nishchit korun jate database-er sathe match hoy
+    package_id: id, 
     user_name: formData.customer_name,
     user_email: formData.customer_email
   };

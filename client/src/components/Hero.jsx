@@ -1,26 +1,43 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import toast, { Toaster } from 'react-hot-toast'; // Toaster install thakte hobe: npm install react-hot-toast
 import { FaMapMarkerAlt, FaCalendarAlt, FaSearch, FaGoogle, FaSignInAlt } from 'react-icons/fa';
-import { HiOutlineUserCircle } from 'react-icons/hi';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import SectionImage from '../assets/Images/Section.png';
 
+const BASE_URL = "http://localhost:5000";
+
 const Hero = () => {
+  const navigate = useNavigate();
   const [showDestinations, setShowDestinations] = useState(false);
-  const [selectedDest, setSelectedDest] = useState("");
+  const [selectedDest, setSelectedDest] = useState(null); 
   const [startDate, setStartDate] = useState(null);
-  const [user, setUser] = useState(null);
   
-  // আলাদা মোডাল স্টেট
+  const [destList, setDestList] = useState([]);
+  const [existingBookings, setExistingBookings] = useState([]);
+  
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showGoogleModal, setShowGoogleModal] = useState(false);
-  
   const [isRegister, setIsRegister] = useState(false);
   const destRef = useRef(null);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) setUser(JSON.parse(savedUser));
+    const fetchData = async () => {
+      try {
+        // ১. প্যাকেজ লিস্ট এবং বুকিং লিস্ট ফেচ করা
+        const [pkgRes, bookingRes] = await Promise.all([
+          axios.get(`${BASE_URL}/api/packages`),
+          axios.get(`${BASE_URL}/api/bookings`)
+        ]);
+        setDestList(pkgRes.data);
+        setExistingBookings(bookingRes.data);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      }
+    };
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -40,18 +57,48 @@ const Hero = () => {
     setShowGoogleModal(false);
   };
 
-  const destinations = ["Paris, France", "Rome, Italy", "Bali, Indonesia", "Sylhet, Bangladesh"];
+const handleSearch = () => {
+  if (!selectedDest || !startDate) {
+    toast.error("Please select both destination and date!");
+    return;
+  }
+
+  // সিলেক্ট করা ডেটকে YYYY-MM-DD ফরম্যাটে নিয়ে আসা
+  const year = startDate.getFullYear();
+  const month = String(startDate.getMonth() + 1).padStart(2, '0');
+  const day = String(startDate.getDate()).padStart(2, '0');
+  const selectedDateString = `${year}-${month}-${day}`;
+
+  // ডুপ্লিকেট বুকিং চেক করার উন্নত লজিক
+  const isAlreadyBooked = existingBookings.some(booking => {
+    // ডাটাবেসের created_at থেকে শুধু তারিখের অংশ (প্রথম ১০ ক্যারেক্টার) নেওয়া
+    const bookingDateOnly = booking.created_at.substring(0, 10); 
+    
+    return (
+      booking.package_id === selectedDest.id && 
+      bookingDateOnly === selectedDateString
+    );
+  });
+
+  if (isAlreadyBooked) {
+    toast.error(`This package is already booked for ${selectedDateString}!`, {
+      style: { background: '#121418', color: '#fbbf24' },
+    });
+  } else {
+    navigate(`/package/${selectedDest.id}`);
+  }
+};
 
   return (
     <section className="px-4 lg:px-10 py-4 lg:py-6">
+      <Toaster position="top-center" reverseOrder={false} />
+      
       <div className="relative bg-[#0b0d10] rounded-[30px] lg:rounded-[40px] min-h-[550px] lg:min-h-[600px] flex flex-col lg:flex-row overflow-hidden border border-white/5 shadow-2xl">
-        {/* স্টারডাস্ট ব্যাকগ্রাউন্ড লেয়ার যোগ করা হয়েছে */}
-  <div className="absolute inset-0 z-0 opacity-40 pointer-events-none" 
-       style={{ 
-         backgroundImage: `url('https://www.transparenttextures.com/patterns/stardust.png')`,
-         backgroundRepeat: 'repeat' 
-       }}>
-  </div>
+        {/* Background Overlay */}
+        <div className="absolute inset-0 z-0 opacity-40 pointer-events-none" 
+             style={{ backgroundImage: `url('https://www.transparenttextures.com/patterns/stardust.png')` }}>
+        </div>
+
         {/* Left Content */}
         <div className="w-full lg:w-[50%] p-6 lg:p-24 flex flex-col justify-center z-20 relative order-2 lg:order-1">
           <span className="text-amber-400 font-serif text-sm lg:text-lg mb-2 lg:mb-4 italic tracking-widest">Vacation Agency</span>
@@ -59,25 +106,26 @@ const Hero = () => {
             Find next place <br /> to visit
           </h1>
 
-          <p className="text-gray-400 mb-8 lg:mb-10 italic text-sm lg:text-base">Choose from thousands of organized Adventures</p>
-
-          {/* Search Bar */}
+          {/* Search Bar Container */}
           <div className="bg-white p-1.5 lg:p-2 rounded-[25px] lg:rounded-full flex flex-col md:flex-row items-center gap-1 shadow-2xl max-w-2xl w-full relative mb-10 z-[100]">
+            
+            {/* Destination Selection */}
             <div className="relative flex-1 w-full md:border-r border-gray-100" ref={destRef}>
               <div className="flex items-center gap-3 px-4 lg:px-6 py-3 lg:py-4 cursor-pointer" onClick={() => setShowDestinations(!showDestinations)}>
                 <FaMapMarkerAlt className="text-amber-500" />
                 <span className={`text-xs lg:text-sm font-bold ${selectedDest ? 'text-slate-800' : 'text-slate-400'}`}>
-                  {selectedDest || "Where to?"}
+                  {selectedDest ? selectedDest.title : "Where to?"}
                 </span>
               </div>
               
               {showDestinations && (
-                <div className="absolute top-[105%] left-0 w-full md:w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[999]">
-                  <div className="max-h-40 overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-amber-200">
-                    {destinations.map((city) => (
-                      <div key={city} className="px-4 py-2.5 hover:bg-amber-400 hover:text-white rounded-xl cursor-pointer text-xs lg:text-sm font-extrabold text-slate-700"
-                        onClick={() => { setSelectedDest(city); setShowDestinations(false); }}>
-                        {city}
+                <div className="absolute top-[105%] left-0 w-full md:w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[999]">
+                  <div className="max-h-60 overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-amber-200">
+                    {destList.map((pkg) => (
+                      <div key={pkg.id} className="px-4 py-3 hover:bg-amber-400 hover:text-white rounded-xl cursor-pointer transition-all"
+                           onClick={() => { setSelectedDest({id: pkg.id, title: pkg.title}); setShowDestinations(false); }}>
+                        <p className="text-xs lg:text-sm font-black">{pkg.title}</p>
+                        <p className="text-[10px] uppercase font-bold opacity-60">{pkg.location}</p>
                       </div>
                     ))}
                   </div>
@@ -85,23 +133,27 @@ const Hero = () => {
               )}
             </div>
 
-            <div className="flex items-center gap-3 px-4 lg:px-6 py-3 lg:py-4 flex-1 w-full relative group">
+            {/* Date Selection */}
+            <div className="flex items-center gap-3 px-4 lg:px-6 py-3 lg:py-4 flex-1 w-full relative">
               <FaCalendarAlt className="text-amber-500" />
               <DatePicker
                 selected={startDate}
                 onChange={(date) => setStartDate(date)}
-                placeholderText="Select dates"
-                className="outline-none text-xs lg:text-sm w-full font-extrabold text-slate-800 cursor-pointer bg-transparent"
-                dateFormat="dd MMM, yyyy"
+                placeholderText="Select date"
+                className="outline-none text-xs lg:text-sm w-full font-extrabold text-slate-800 bg-transparent cursor-pointer"
+                dateFormat="yyyy-MM-dd"
               />
             </div>
 
-            <button className="bg-amber-400 w-full md:w-14 lg:w-16 h-12 md:h-14 lg:h-16 rounded-xl md:rounded-full flex items-center justify-center text-slate-900 hover:bg-black transition-all">
+            <button 
+              onClick={handleSearch}
+              className="bg-amber-400 w-full md:w-14 lg:w-16 h-12 md:h-14 lg:h-16 rounded-xl md:rounded-full flex items-center justify-center text-slate-900 hover:bg-black hover:text-white transition-all shadow-lg active:scale-95"
+            >
               <FaSearch size={20} />
             </button>
           </div>
-
-          {/* Auth Section */}
+          
+            {/* Auth Section */}
           <div className="flex flex-wrap items-center gap-4 lg:gap-6">
             <div 
               onClick={() => { setShowAuthModal(true); setIsRegister(false); }}
@@ -132,7 +184,7 @@ const Hero = () => {
         </div>
       </div>
 
-      {/* MODAL 1: Email Form Only */}
+       {/* MODAL 1: Email Form Only */}
       {showAuthModal && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="bg-[#121418] border border-white/10 p-8 rounded-[35px] max-w-md w-full relative animate-in zoom-in duration-300 shadow-2xl">
@@ -158,7 +210,7 @@ const Hero = () => {
           </div>
         </div>
       )}
-
+      
       {/* MODAL 2: Google Only */}
       {showGoogleModal && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
@@ -185,11 +237,7 @@ const Hero = () => {
           </div>
         </div>
       )}
-
-      <style>{`
-        .scrollbar-thin::-webkit-scrollbar { width: 4px; }
-        .scrollbar-thin::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 10px; }
-      `}</style>
+      <style>{`.scrollbar-thin::-webkit-scrollbar { width: 4px; } .scrollbar-thin::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 10px; }`}</style>
     </section>
   );
 };

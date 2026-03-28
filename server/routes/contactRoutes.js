@@ -2,11 +2,39 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 
-// অ্যাডমিন প্যানেলে কন্টাক্ট মেসেজগুলো দেখার জন্য
-router.get('/messages', (req, res) => {
-    db.query("SELECT * FROM contacts ORDER BY id DESC", (err, result) => {
-        if (err) return res.status(500).json(err);
-        res.status(200).json(result);
+// POST request for /api/contacts
+router.post('/', (req, res) => {
+    const { from_location, to_location, journey_date, guests, budget } = req.body;
+
+    // ডাটাবেস কলামের নাম অনুযায়ী কুয়েরি
+    const sql = "INSERT INTO contacts (from_location, to_location, journey_date, guests, budget) VALUES (?, ?, ?, ?, ?)";
+    
+    db.query(sql, [from_location, to_location, journey_date, guests, budget], (err, result) => {
+        if (err) {
+            console.error("DB Error:", err);
+            return res.status(500).json({ error: err.message });
+        }
+        res.status(200).json({ status: "Success", message: "Data saved!" });
+    });
+});
+
+// সব কন্টাক্ট মেসেজ ডাটাবেস থেকে নিয়ে আসা
+router.get('/', (req, res) => {
+    const sql = "SELECT * FROM contacts ORDER BY id DESC";
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error("Error fetching data:", err);
+            return res.status(500).json({ error: "ডাটা আনতে সমস্যা হয়েছে" });
+        }
+        res.status(200).json(results);
+    });
+});
+
+router.delete('/:id', (req, res) => {
+    const { id } = req.params;
+    db.query("DELETE FROM contacts WHERE id = ?", [id], (err, result) => {
+        if (err) return res.status(500).send(err);
+        res.status(200).json({ message: "Deleted" });
     });
 });
 
