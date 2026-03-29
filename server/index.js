@@ -1,10 +1,11 @@
 const express = require('express');
 const cors = require('cors');
-const path = require('path'); // পাথ মডিউল ইম্পোর্ট করুন
+const path = require('path');
 require('dotenv').config(); 
 
 // রাউটস ইম্পোর্ট
-const userRoutes = require('./routes/userRoutes'); 
+const userRoutes = require('./routes/userRoutes'); // আগের ইউজার রাউট
+const memberRoutes = require('./routes/memberRoutes'); // নতুন মেম্বার রাউট
 const bookingRoutes = require('./routes/bookingRoutes');
 const packageRoutes = require('./routes/packageRoutes');
 const blogRoutes = require('./routes/blogRoutes');
@@ -13,7 +14,6 @@ const contactRoutes = require('./routes/contactRoutes');
 const app = express();
 
 // Middleware
-
 app.use(cors({
     origin: 'http://localhost:5173',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -21,22 +21,21 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// ১. Static Folder ডিক্লেয়ার করা (যাতে ফ্রন্টএন্ড থেকে ইমেজ এক্সেস করা যায়)
-// এটি 'Uploads' ফোল্ডারকে পাবলিকলি এভেইলঅ্যাবল করবে
+// Static Folder (Images access)
 app.use('/Uploads', express.static(path.join(__dirname, 'Uploads')));
 
-// ২. API Routes
-app.use('/api/users', userRoutes); 
+// API Routes
+app.use('/api/users', userRoutes);      // সাধারণ ইউজার বা এডমিনদের জন্য
+app.use('/api/members', memberRoutes);  // app_members টেবিলের জন্য (Firebase Sync)
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/packages', packageRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/contacts', contactRoutes);
 
 app.get('/', (req, res) => {
-    res.send("Travlia Server is Running...");
+    res.send("Travlia Server is Running with Multi-Route Support...");
 });
 
-// পোর্ট সেটআপ
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`🚀 Server is running on port ${PORT}`);
