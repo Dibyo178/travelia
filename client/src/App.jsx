@@ -23,6 +23,7 @@ import UserList from './pages/Admin/UserList';
 import ManageBlogs from './pages/Admin/ManageBlogs';
 import AdminMessages from './pages/Admin/AdminMessages';
 import BlogDetails from './pages/BlogDetails';
+import MemberManagement from './pages/Admin/MemberManagement';
 
 // ১. প্রটেক্টেড রাউট কম্পোনেন্ট (Admin-এর জন্য)
 const ProtectedRoute = ({ children }) => {
@@ -102,6 +103,15 @@ function App() {
           <Route path="/admin/users" element={
             <ProtectedRoute><AdminLayout><UserList /></AdminLayout></ProtectedRoute>
           } />
+
+         // Admin Dashboard Routes সেকশনে গিয়ে এটি যোগ করুন
+<Route path="/admin/members" element={
+  <ProtectedRoute>
+    <AdminLayout>
+      <MemberManagement />
+    </AdminLayout>
+  </ProtectedRoute>
+} />
         </Routes>
       </LayoutWrapper>
     </Router>
