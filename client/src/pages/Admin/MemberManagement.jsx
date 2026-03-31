@@ -3,7 +3,9 @@ import axios from 'axios';
 import { MdPeople, MdEmail, MdCalendarToday, MdOutlineVerifiedUser, MdDeleteOutline } from 'react-icons/md';
 import toast, { Toaster } from 'react-hot-toast';
 
-const BASE_URL = "http://localhost:5000";
+const BASE_URL = window.location.hostname === "localhost" 
+  ? "http://localhost:5000" 
+  : "https://travalia.sourovdev.space/";
 
 const MemberManagement = () => {
   const [members, setMembers] = useState([]);

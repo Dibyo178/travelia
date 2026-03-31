@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
 
-// লগইন রাউট - এটি ছাড়া লগইন কাজ করবে না
+
 router.post('/login', userController.loginUser); 
 
 router.get('/', userController.getAllUsers);

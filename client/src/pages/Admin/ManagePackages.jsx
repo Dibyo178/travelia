@@ -25,7 +25,10 @@ const ManagePackages = () => {
     id: null, title: '', location: '', price: '', days: '', nights: '', countries: '', image: '', recommended: false 
   });
 
-  const BASE_URL = 'http://localhost:5000'; 
+ 
+const BASE_URL = window.location.hostname === "localhost" 
+  ? "http://localhost:5000" 
+  : "https://travalia.sourovdev.space/";
 
   // SweetAlert Toast Configuration
   const Toast = Swal.mixin({

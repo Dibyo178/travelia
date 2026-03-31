@@ -9,7 +9,6 @@ const ForgotPassword = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // এখানে আপনার পাসওয়ার্ড রিসেট লজিক বা API কল হবে
     setIsSent(true);
   };
 

@@ -6,7 +6,7 @@ const db = require('../config/db');
 router.post('/', (req, res) => {
     const { from_location, to_location, journey_date, guests, budget } = req.body;
 
-    // ডাটাবেস কলামের নাম অনুযায়ী কুয়েরি
+
     const sql = "INSERT INTO contacts (from_location, to_location, journey_date, guests, budget) VALUES (?, ?, ?, ?, ?)";
     
     db.query(sql, [from_location, to_location, journey_date, guests, budget], (err, result) => {
@@ -18,13 +18,12 @@ router.post('/', (req, res) => {
     });
 });
 
-// সব কন্টাক্ট মেসেজ ডাটাবেস থেকে নিয়ে আসা
 router.get('/', (req, res) => {
     const sql = "SELECT * FROM contacts ORDER BY id DESC";
     db.query(sql, (err, results) => {
         if (err) {
             console.error("Error fetching data:", err);
-            return res.status(500).json({ error: "ডাটা আনতে সমস্যা হয়েছে" });
+            return res.status(500).json({ error: "error fetch data get" });
         }
         res.status(200).json(results);
     });

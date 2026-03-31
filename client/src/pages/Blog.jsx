@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-
+import { BASE_URL } from '../config';
 const Blog = () => {
-  // ১. স্টেট ডিক্লেয়ারেশন
-  const [allPosts, setAllPosts] = useState([]); // ডাটাবেস থেকে আসা সব পোস্ট
+
+  const [allPosts, setAllPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 6;
 
-  // ২. এপিআই থেকে ডাটা ফেচ করা
+
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        // আপনার ব্যাকএন্ড ইউআরএল (Localhost/Live)
-        const res = await axios.get('http://localhost:5000/api/blogs');
+
+        const res = await axios.get(`${BASE_URL}/api/blogs`);
         setAllPosts(res.data);
         setLoading(false);
       } catch (err) {
@@ -25,7 +25,7 @@ const Blog = () => {
     fetchBlogs();
   }, []);
 
-  // ৩. ডাইনামিক প্যাজিনেশন লজিক
+
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentPosts = allPosts.slice(indexOfFirstPost, indexOfLastPost);
@@ -56,11 +56,12 @@ const Blog = () => {
           {currentPosts.length > 0 ? currentPosts.map((post, i) => (
             <div key={post.id || i} className="group cursor-pointer">
               <div className="rounded-[40px] overflow-hidden h-72 mb-8 relative shadow-lg">
-                {/* ইমেজ পাথ ব্যাকএন্ড ইউআরএল সহ */}
+
+
                 <img
-                  src={`http://localhost:5000/Uploads/Blog/${post.image}`}
-                  className="w-full h-full object-cover group-hover:scale-110 transition duration-700"
+                  src={`${BASE_URL}/Uploads/Blog/${post.image}`}
                   alt={post.title}
+                  className="w-full h-full object-cover group-hover:scale-110 transition duration-700"
                 />
                 <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl shadow-sm">
                   <span className="text-[10px] font-black uppercase text-slate-800">
@@ -76,7 +77,7 @@ const Blog = () => {
                 <h3 className="text-2xl font-black text-slate-900 leading-tight mb-4 group-hover:text-amber-500 transition-colors">
                   {post.title}
                 </h3>
-                {/* কন্টেন্ট থেকে শর্ট ডেসক্রিপশন */}
+           
                 <p className="text-slate-500 text-sm leading-relaxed mb-6 italic">
                   {post.content.substring(0, 120)}...
                 </p>

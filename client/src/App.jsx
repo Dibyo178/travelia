@@ -1,8 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+
+// Layout Components
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import AdminSidebar from './components/Admin/AdminSidebar';
+import Chatbot from './components/Chatbot';
 
 // Public Pages
 import Home from './pages/Home';
@@ -11,7 +14,8 @@ import Tours from './pages/Tours';
 import Contact from './pages/Contact';
 import Blog from './pages/Blog';
 import PackageDetails from './components/PackageDetails';
-import Profile from './pages/Profile'; // প্রোফাইল পেজ ইমপোর্ট করুন
+import Profile from './pages/Profile'; 
+import BlogDetails from './pages/BlogDetails';
 
 // Admin Pages
 import Dashboard from './pages/Admin/Dashboard';
@@ -22,10 +26,9 @@ import ForgotPassword from './pages/Admin/ForgotPassword';
 import UserList from './pages/Admin/UserList';
 import ManageBlogs from './pages/Admin/ManageBlogs';
 import AdminMessages from './pages/Admin/AdminMessages';
-import BlogDetails from './pages/BlogDetails';
 import MemberManagement from './pages/Admin/MemberManagement';
 
-// ১. প্রটেক্টেড রাউট কম্পোনেন্ট (Admin-এর জন্য)
+//  ptotected route for Admin Dashboard
 const ProtectedRoute = ({ children }) => {
   const isAuthenticated = localStorage.getItem('adminToken'); 
   if (!isAuthenticated) {
@@ -34,7 +37,7 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// অ্যাডমিন প্যানেলের লেআউট
+// Admin Layout with Sidebar
 const AdminLayout = ({ children }) => {
   return (
     <div className="flex">
@@ -46,16 +49,23 @@ const AdminLayout = ({ children }) => {
   );
 };
 
+// Layout Wrapper to conditionally render Navbar and Footer
+
 const LayoutWrapper = ({ children }) => {
   const location = useLocation();
   const isAdminPath = location.pathname.startsWith('/admin');
 
   return (
     <>
-      {/* অ্যাডমিন পাথ না হলে নেভবার দেখাবে */}
+ 
       {!isAdminPath && <Navbar />}
+      
       {children}
-      {/* অ্যাডমিন পাথ না হলে ফুটার দেখাবে */}
+      
+  
+      {!isAdminPath && <Chatbot />} 
+
+    
       {!isAdminPath && <Footer />}
     </>
   );
@@ -66,25 +76,21 @@ function App() {
     <Router>
       <LayoutWrapper>
         <Routes>
-          {/* Public Routes */}
+          {/* --- Public Routes --- */}
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/tours" element={<Tours />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/contact" element={<Contact />} />
-          
-          {/* ইউজার প্রোফাইল রাউট - এখানে সাধারণ নেভবার/ফুটার থাকবে */}
           <Route path="/profile" element={<Profile />} />
           <Route path="/blog/:id" element={<BlogDetails />} />
-
-          {/* প্যাকেজ ডিটেইলস */}
           <Route path="/package/:id" element={<PackageDetails />} />
 
-          {/* Admin Auth */}
+          {/* --- Admin Auth --- */}
           <Route path="/admin/login" element={<Login />} />
           <Route path="/admin/forgot-password" element={<ForgotPassword />} />
 
-          {/* Admin Dashboard Routes */}
+          {/* --- Admin Dashboard Routes (Protected) --- */}
           <Route path="/admin/dashboard" element={
             <ProtectedRoute><AdminLayout><Dashboard /></AdminLayout></ProtectedRoute>
           } />
@@ -103,15 +109,9 @@ function App() {
           <Route path="/admin/users" element={
             <ProtectedRoute><AdminLayout><UserList /></AdminLayout></ProtectedRoute>
           } />
-
-         // Admin Dashboard Routes সেকশনে গিয়ে এটি যোগ করুন
-<Route path="/admin/members" element={
-  <ProtectedRoute>
-    <AdminLayout>
-      <MemberManagement />
-    </AdminLayout>
-  </ProtectedRoute>
-} />
+          <Route path="/admin/members" element={
+            <ProtectedRoute><AdminLayout><MemberManagement /></AdminLayout></ProtectedRoute>
+          } />
         </Routes>
       </LayoutWrapper>
     </Router>

@@ -3,7 +3,10 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import TourImage from '../assets/Images/tours.png';
 
-const BASE_URL = "http://localhost:5000"; // Apnar backend URL
+
+const BASE_URL = window.location.hostname === "localhost" 
+  ? "http://localhost:5000" 
+  : "https://travalia.sourovdev.space/";
 
 const Tours = () => {
     const [allTours, setAllTours] = useState([]); // Database theke asha sob data

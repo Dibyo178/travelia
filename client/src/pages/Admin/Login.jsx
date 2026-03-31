@@ -11,24 +11,24 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // ১. ডায়নামিক বেস ইউআরএল সেট করা (Localhost এবং Live Server এর জন্য)
+    // (Localhost and Live Server)
     const BASE_URL = window.location.hostname === 'localhost' 
         ? 'http://localhost:5000' 
-        : 'https://api.yourdomain.com'; // এখানে আপনার আসল লাইভ এপিআই ইউআরএল দিবেন
+        : 'https://travalia.sourovdev.space/'; 
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
 
         try {
-            // ২. ডায়নামিক ইউআরএল ব্যবহার করে এপিআই কল
+          
             const response = await axios.post(`${BASE_URL}/api/users/login`, {
                 email,
                 password
             });
 
             if (response.status === 200) {
-                // সফলতার মেসেজ
+              
                 toast.success('Login Successful! Welcome back.', {
                     duration: 2000,
                     style: {
@@ -38,18 +38,16 @@ const Login = () => {
                     }
                 });
 
-                // ৩. প্রটেক্টড রাউটের জন্য টোকেন এবং ইউজার ডাটা সেভ করা
-                // App.js এ ProtectedRoute এই 'adminToken' চেক করে
+              
                 localStorage.setItem('adminToken', 'true'); 
                 localStorage.setItem('user', JSON.stringify(response.data.user));
-
-                // ৪. ১.৫ সেকেন্ড পর ড্যাশবোর্ডে নেভিগেট করা
+            
                 setTimeout(() => {
                     navigate('/admin/dashboard');
                 }, 1500);
             }
         } catch (error) {
-            // এরর মেসেজ হ্যান্ডলিং
+     
             const errorMsg = error.response?.data?.message || "Authentication failed!";
             toast.error(errorMsg, {
                 style: {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   MdDashboard, 
@@ -9,45 +9,55 @@ import {
   MdLogout,
   MdArticle, 
   MdMessage,
-  MdGroup // নতুন আইকন
+  MdGroup 
 } from 'react-icons/md';
 
 const AdminSidebar = () => {
   const location = useLocation();
-  const navigate = useNavigate(); 
-  
+  const navigate = useNavigate();
+  const [userRole, setUserRole] = useState('User');
+
+  useEffect(() => {
+    // LocalStorage 
+    const userData = JSON.parse(localStorage.getItem('user'));
+    if (userData && userData.role) {
+      setUserRole(userData.role);
+    }
+  }, []);
+
   const isActive = (path) => location.pathname === path;
 
   const handleSignOut = () => {
     localStorage.removeItem('user'); 
-    localStorage.removeItem('adminUser'); 
     localStorage.removeItem('adminToken');
     navigate('/admin/login'); 
   };
 
-  const menuItems = [
-    { name: 'Dashboard', path: '/admin/dashboard', icon: <MdDashboard /> },
-    { name: 'Manage Packages', path: '/admin/manage-packages', icon: <MdCardTravel /> },
-    { name: 'View Bookings', path: '/admin/view-bookings', icon: <MdEventAvailable /> },
-    { name: 'Manage Blogs', path: '/admin/manage-blogs', icon: <MdArticle /> },
-    { name: 'Contact Messages', path: '/admin/messages', icon: <MdMessage /> },
-    // আগের ইউজার লিস্টটি এখানে থাকল
-    { name: 'User List', path: '/admin/users', icon: <MdPeople /> }, 
-    // নতুন app_members টেবিল ম্যানেজমেন্ট অপশন যোগ করা হলো
-    { name: 'App Members', path: '/admin/members', icon: <MdGroup /> }, 
+  const allMenuItems = [
+    { name: 'Dashboard', path: '/admin/dashboard', icon: <MdDashboard />, roles: ['Admin', 'User'] },
+    { name: 'Manage Packages', path: '/admin/manage-packages', icon: <MdCardTravel />, roles: ['Admin'] },
+    { name: 'View Bookings', path: '/admin/view-bookings', icon: <MdEventAvailable />, roles: ['Admin', 'User'] },
+    { name: 'Manage Blogs', path: '/admin/manage-blogs', icon: <MdArticle />, roles: ['Admin'] },
+    { name: 'Contact Messages', path: '/admin/messages', icon: <MdMessage />, roles: ['Admin', 'User'] },
+    { name: 'User List', path: '/admin/users', icon: <MdPeople />, roles: ['Admin'] }, 
+    { name: 'App Members', path: '/admin/members', icon: <MdGroup />, roles: ['Admin'] }, 
   ];
+
+  const filteredMenuItems = allMenuItems.filter(item => item.roles.includes(userRole));
 
   return (
     <div className="w-72 min-h-screen bg-slate-900 text-slate-300 flex flex-col shadow-2xl sticky top-0 h-screen">
       <div className="p-8 border-b border-slate-800 text-center">
         <h2 className="text-2xl font-black text-white tracking-tighter mb-2">
-          Travlia<span className="text-orange-500">.</span> Admin
+          Travlia<span className="text-orange-500">.</span> {userRole === 'Admin' ? 'Admin' : 'Portal'}
         </h2>
-        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Control Panel</p>
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+          {userRole === 'Admin' ? 'Control Panel' : 'User Panel'}
+        </p>
       </div>
 
       <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto">
-        {menuItems.map((item) => (
+        {filteredMenuItems.map((item) => (
           <Link
             key={item.name}
             to={item.path}

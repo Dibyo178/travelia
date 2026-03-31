@@ -19,19 +19,24 @@ const Contact = () => {
 const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // ব্যাকএন্ড এপিআই কল
-      const response = await axios.post('http://localhost:5000/api/contacts', formData);
+    
+const BASE_URL = window.location.hostname === "localhost" 
+  ? "http://localhost:5000" 
+  : "https://travalia.sourovdev.space/"; 
+
+
+const response = await axios.post(`${BASE_URL}/api/contacts`, formData);
       
-      // ব্যাকএন্ড যদি status: "Success" পাঠায় (আপনার contactRoutes অনুযায়ী)
+   
       if (response.status === 200) {
         toast.success('Your message has been sent successfully!');
         
-        // ফর্ম রিসেট বা ইনপুট ফিল্ড খালি করা
+  
         setFormData({
           from_location: '',
           to_location: '',
           journey_date: '',
-          guests: '1 Person',
+          guests: '1 Person'
           budget: '500 USD'
         });
       }

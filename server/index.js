@@ -3,9 +3,9 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config(); 
 
-// রাউটস ইম্পোর্ট
-const userRoutes = require('./routes/userRoutes'); // আগের ইউজার রাউট
-const memberRoutes = require('./routes/memberRoutes'); // নতুন মেম্বার রাউট
+
+const userRoutes = require('./routes/userRoutes'); 
+const memberRoutes = require('./routes/memberRoutes'); 
 const bookingRoutes = require('./routes/bookingRoutes');
 const packageRoutes = require('./routes/packageRoutes');
 const blogRoutes = require('./routes/blogRoutes');
@@ -14,8 +14,9 @@ const contactRoutes = require('./routes/contactRoutes');
 const app = express();
 
 // Middleware
+
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: true, 
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
 }));
@@ -25,8 +26,8 @@ app.use(express.json());
 app.use('/Uploads', express.static(path.join(__dirname, 'Uploads')));
 
 // API Routes
-app.use('/api/users', userRoutes);      // সাধারণ ইউজার বা এডমিনদের জন্য
-app.use('/api/members', memberRoutes);  // app_members টেবিলের জন্য (Firebase Sync)
+app.use('/api/users', userRoutes);     
+app.use('/api/members', memberRoutes);  // app_members(Firebase Sync)
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/packages', packageRoutes);
 app.use('/api/blogs', blogRoutes);

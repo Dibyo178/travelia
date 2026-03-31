@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { BASE_URL } from '../config';
 
 const BlogList = () => {
     const [blogs, setBlogs] = useState([]);
 
     useEffect(() => {
-        axios.get('http://localhost:5000/api/blogs').then(res => setBlogs(res.data));
+        axios.get(`${BASE_URL}/api/blogs`).then(res => setBlogs(res.data));
     }, []);
 
     return (

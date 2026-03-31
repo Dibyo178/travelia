@@ -1,156 +1,177 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { MdTrendingUp, MdOutlineDateRange, MdPeopleOutline, MdAttachMoney } from 'react-icons/md';
+import { 
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, Legend
+} from 'recharts';
+import { 
+  MdTrendingUp, MdOutlineDateRange, MdPeopleOutline, MdAttachMoney, 
+} from 'react-icons/md';
+
+
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
     totalPackages: 0,
-    activeBookings: 158,
-    totalUsers: 1240,
-    totalRevenue: 45200
+    activeBookings: 0,
+    totalMembers: 0,
+    totalRevenue: 0,
+    areaData: [],
+    pieData: []
   });
   const [loading, setLoading] = useState(true);
+  const [adminData, setAdminData] = useState({ name: 'Admin', role: 'Super Admin', image: null });
 
-  const [adminData, setAdminData] = useState({
-    name: 'Admin',
-    email: '',
-    role: 'Super Admin',
-    image: null 
-  });
 
-  const API_BASE = window.location.hostname === 'localhost' 
-    ? 'http://localhost:5000' 
-    : 'https://api.yourdomain.com';
+const API_BASE = window.location.hostname === "localhost" 
+  ? "http://localhost:5000" 
+  : "https://travalia.sourovdev.space/";
+
+  const PIE_COLORS = ['#6366f1', '#f59e0b', '#10b981'];
 
   useEffect(() => {
-    // ১. ইউজার ডাটা লোড করা
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       try {
         const user = JSON.parse(storedUser);
         setAdminData({
-          name: user?.name || 'Admin User',
-          email: user?.email || '',
+          name: user?.full_name || 'Admin User',
           role: user?.role || 'Super Admin',
           image: user?.image || null 
         });
-      } catch (e) {
-        console.error("User parsing error", e);
-      }
+      } catch (e) { console.error(e); }
     }
 
-    // ২. ড্যাশবোর্ড ডাটা ফেচ করা
-    const fetchDashboardData = async () => {
+    const fetchDashboardStats = async () => {
       try {
-        const packageRes = await axios.get(`${API_BASE}/api/packages`);
-        if (packageRes.data) {
-          setStats(prev => ({
-            ...prev,
-            totalPackages: Array.isArray(packageRes.data) ? packageRes.data.length : 0
-          }));
-        }
-      } catch (error) {
-        console.error("Dashboard API error:", error);
-      } finally {
-        // এই লাইনটি নিশ্চিত করবে যে ডাটা আসুক বা না আসুক, স্ক্রিন থেকে লোডিং চলে যাবে
-        setLoading(false);
-      }
+        setLoading(true);
+        const [packageRes, memberRes, bookingRes] = await Promise.all([
+          axios.get(`${API_BASE}/api/packages`),
+          axios.get(`${API_BASE}/api/members/members-list`),
+          axios.get(`${API_BASE}/api/bookings`)
+        ]);
+
+        const totalRev = bookingRes.data.reduce((sum, item) => sum + (Number(item.package_price) || 0), 0);
+
+        // Area Chart Data
+        const areaData = bookingRes.data.slice(0, 7).map(item => ({
+          name: new Date(item.created_at).toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
+          revenue: Number(item.package_price) || 0
+        })).reverse();
+
+        // Pie Chart Data
+        const pieData = [
+          { name: 'Packages', value: packageRes.data.length || 0 },
+          { name: 'Bookings', value: bookingRes.data.length || 0 },
+          { name: 'Members', value: memberRes.data.length || 0 }
+        ];
+
+        setStats({
+          totalPackages: packageRes.data.length || 0,
+          totalMembers: memberRes.data.length || 0,
+          activeBookings: bookingRes.data.length || 0,
+          totalRevenue: totalRev,
+          areaData,
+          pieData
+        });
+
+      } catch (error) { console.error("Error fetching stats:", error); } finally { setLoading(false); }
     };
 
-    fetchDashboardData();
-  }, [API_BASE]);
+    fetchDashboardStats();
+  }, []);
 
   return (
     <div className="flex bg-slate-50 min-h-screen font-sans w-full">
       <div className="flex-1 p-4 lg:p-12 overflow-y-auto">
+        
+        {/* Header */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
           <div>
-            <h1 className="text-4xl font-black text-slate-900 tracking-tight">Admin Dashboard</h1>
-            <p className="text-slate-500 mt-1 font-medium">
-              Hello {adminData.name.split(' ')[0]}, welcome back to your travel empire.
-            </p>
+            <h1 className="text-4xl font-black text-slate-900 tracking-tight italic uppercase">Travlia Control Center</h1>
+            <p className="text-slate-500 mt-1 font-bold uppercase text-[10px] tracking-widest opacity-60">Control by admin</p>
           </div>
           
-          <div className="flex items-center gap-4 bg-white p-2 pr-6 rounded-full shadow-sm border border-slate-100">
-            <div className="w-10 h-10 rounded-full overflow-hidden shadow-inner border-2 border-slate-50 bg-slate-100">
-            <img 
-  // যদি পাথ এর শুরুতে / না থাকে তবে একটি / যোগ করে নিন
-  src={adminData.image 
-    ? `${API_BASE}${adminData.image.startsWith('/') ? '' : '/'}${adminData.image}` 
-    : `https://ui-avatars.com/api/?name=${adminData.name}&background=f97316&color=fff`
-  } 
-  className="w-full h-full object-cover" 
-  alt="Admin Profile" 
-  // এরর হ্যান্ডলিং যাতে ইমেজ না পেলে সাদা না দেখায়
-  onError={(e) => { 
-    e.target.onerror = null; 
-    e.target.src = `https://ui-avatars.com/api/?name=${adminData.name}&background=f97316&color=fff`; 
-  }}
-/>
+          <div className="flex items-center gap-4 bg-white p-2 pr-6 rounded-[20px] shadow-xl shadow-slate-200/50 border border-white">
+            <div className="w-12 h-12 rounded-2xl overflow-hidden border-2 border-orange-500">
+              <img 
+                src={adminData.image ? `${API_BASE}${adminData.image}` : `https://ui-avatars.com/api/?name=${adminData.name}&background=f97316&color=fff`} 
+                className="w-full h-full object-cover" alt="Profile" 
+              />
             </div>
             <div>
-              <p className="text-xs font-black text-slate-900 leading-none">{adminData.name}</p>
-              <p className="text-[10px] text-orange-500 font-bold uppercase tracking-wider mt-1">{adminData.role}</p>
+              <p className="text-sm font-black text-slate-900 leading-none">{adminData.name}</p>
+              <p className="text-[10px] text-orange-500 font-black uppercase tracking-tighter mt-1">{adminData.role}</p>
             </div>
           </div>
         </header>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          <StatCard title="Total Packages" value={loading ? "..." : stats.totalPackages} icon={<MdTrendingUp />} color="from-blue-500 to-blue-600" />
-          <StatCard title="Active Bookings" value={loading ? "..." : stats.activeBookings} icon={<MdOutlineDateRange />} color="from-emerald-500 to-emerald-600" />
-          <StatCard title="Total Users" value={loading ? "..." : stats.totalUsers.toLocaleString()} icon={<MdPeopleOutline />} color="from-violet-500 to-violet-600" />
-          <StatCard title="Total Revenue" value={loading ? "..." : `$${stats.totalRevenue.toLocaleString()}`} icon={<MdAttachMoney />} color="from-orange-500 to-orange-600" />
+        {/* Stats Grid with Original Hover Effect */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+          <StatCard title="Total Packages" value={loading ? "..." : stats.totalPackages} icon={<MdTrendingUp />} color="bg-blue-600" />
+          <StatCard title="Active Bookings" value={loading ? "..." : stats.activeBookings} icon={<MdOutlineDateRange />} color="bg-emerald-600" />
+          <StatCard title="Total Members" value={loading ? "..." : stats.totalMembers} icon={<MdPeopleOutline />} color="bg-violet-600" />
+          <StatCard title="Net Revenue" value={loading ? "..." : `$${stats.totalRevenue.toLocaleString()}`} icon={<MdAttachMoney />} color="bg-orange-600" />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 bg-white rounded-[32px] shadow-xl shadow-slate-200/50 p-8 border border-white">
-            <div className="flex justify-between items-center mb-8">
-              <h3 className="text-xl font-black text-slate-900">Recent Booking Requests</h3>
-              <button className="text-xs font-bold text-orange-500 hover:underline transition-all">View All</button>
-            </div>
-            <div className="text-center py-20 border-2 border-dashed border-slate-50 rounded-3xl bg-slate-50/50">
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm text-2xl">✨</div>
-                <p className="text-slate-400 font-medium">No pending requests. You're all caught up!</p>
+        {/* Dynamic Charts Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+          {/* Revenue Flow Chart (Area Chart) */}
+          <div className="lg:col-span-2 bg-white rounded-[40px] shadow-2xl shadow-slate-200/60 p-10 border border-white hover:-translate-y-1 transition-all duration-500">
+            <h3 className="text-xl font-black text-slate-900 italic uppercase mb-8">Revenue Flow</h3>
+            <div className="h-[350px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={stats.areaData}>
+                  <defs>
+                    <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 700, fill: '#94a3b8'}} />
+                  <Tooltip contentStyle={{borderRadius: '15px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'}} />
+                  <Area type="monotone" dataKey="revenue" stroke="#6366f1" strokeWidth={4} fill="url(#colorRev)" />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           </div>
-          
-          <div className="bg-slate-900 rounded-[32px] p-8 text-white relative overflow-hidden shadow-2xl">
-             <div className="relative z-10">
-                <h3 className="text-xl font-bold mb-2">System Health</h3>
-                <p className="text-slate-400 text-sm mb-6">Server status is optimal.</p>
-                <div className="space-y-4">
-                    <div className="bg-slate-800/50 p-4 rounded-2xl border border-slate-700">
-                      <p className="text-xs text-slate-500 font-bold uppercase mb-1">Database</p>
-                      <div className="flex justify-between items-center">
-                         <span className="text-sm font-bold">99.9% Up</span>
-                         <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                      </div>
-                    </div>
-                    <div className="pt-4 border-t border-slate-800">
-                      <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">Logged in as:</p>
-                      <p className="text-xs text-slate-300 truncate font-mono">{adminData.email || 'N/A'}</p>
-                    </div>
-                </div>
-             </div>
-             <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-orange-500/10 rounded-full blur-3xl"></div>
+
+          {/* Distributions (Pie Chart) */}
+          <div className="bg-white rounded-[40px] shadow-2xl shadow-slate-200/60 p-10 border border-white hover:-translate-y-1 transition-all duration-500">
+            <h3 className="text-xl font-black text-slate-900 italic uppercase mb-4">Distributions</h3>
+            <div className="h-[300px] w-full flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={stats.pieData} innerRadius={65} outerRadius={90} paddingAngle={5} dataKey="value">
+                    {stats.pieData.map((entry, index) => <Cell key={index} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
+                  </Pie>
+                  <Tooltip />
+                  <Legend verticalAlign="bottom" iconType="circle" />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
+
       </div>
     </div>
   );
 };
 
+// Sub-components with original hover effect
 const StatCard = ({ title, value, icon, color }) => (
-  <div className="bg-white p-6 rounded-[32px] shadow-xl shadow-slate-200/40 flex items-center gap-4 border border-white hover:translate-y-[-5px] transition-all duration-300">
-    <div className={`bg-gradient-to-br ${color} text-white w-12 h-12 rounded-xl flex items-center justify-center text-xl shadow-lg`}>
+  <div className="bg-white p-8 rounded-[35px] shadow-2xl shadow-slate-200/50 flex flex-col gap-5 border border-white hover:-translate-y-2 transition-all duration-500 group">
+    <div className={`${color} text-white w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-lg group-hover:rotate-[15deg] transition-transform`}>
       {icon}
     </div>
     <div>
-      <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">{title}</p>
-      <p className="text-2xl font-black text-slate-900">{value}</p>
+      <p className="text-slate-400 text-[11px] font-black uppercase tracking-[0.2em] mb-1">{title}</p>
+      <p className="text-3xl font-black text-slate-900 tracking-tighter">{value}</p>
     </div>
   </div>
 );
+
+
 
 export default Dashboard;

@@ -11,10 +11,10 @@ const UserList = () => {
   const [currentUser, setCurrentUser] = useState({ id: null, name: '', email: '', role: 'User' });
   const [selectedFile, setSelectedFile] = useState(null);
 
-  // ডাইনামিক ইউআরএল লজিক: লোকাল এবং লাইভ উভয় জায়গায় কাজ করবে
+
   const API_BASE = window.location.hostname === "localhost" 
     ? "http://localhost:5000" 
-    : "https://yourdomain.com"; // আপনার আসল ডোমেইন এখানে দিন
+    : "https://travalia.sourovdev.space/";
 
   const BASE_URL = `${API_BASE}/api/users`;
   const IMAGE_URL = API_BASE; 
@@ -178,7 +178,7 @@ const UserList = () => {
                   <select className="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl outline-none focus:border-orange-500 font-bold" value={currentUser.role} onChange={(e) => setCurrentUser({...currentUser, role: e.target.value})}>
                     <option value="User">User</option>
                     <option value="Admin">Admin</option>
-                    <option value="Moderator">Moderator</option>
+                    
                   </select>
                 </div>
                 

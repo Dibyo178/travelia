@@ -1,15 +1,15 @@
 const db = require('../config/db');
 
-// ১. নতুন বুকিং তৈরি করা (User Side - Enhanced with Guests & Amount)
+// (User Side - Enhanced with Guests & Amount)
 exports.createBooking = (req, res) => {
-    // Request body theke guests ebong amount-o niye asha hocche
+
     const { package_id, user_name, user_email, guests, amount } = req.body;
     
     const pid = parseInt(package_id);
-    const guestCount = parseInt(guests) || 1; // Default 1 jodi na thake
+    const guestCount = parseInt(guests) || 1;
     const totalAmount = parseFloat(amount) || 0;
 
-    // SQL update: guests ebong amount column-e data insert kora
+    // SQL update: guests and amount columndata insert
     const sql = `INSERT INTO bookings 
                  (package_id, user_name, user_email, guests, amount, status) 
                  VALUES (?, ?, ?, ?, ?, 'Pending')`;
@@ -20,14 +20,14 @@ exports.createBooking = (req, res) => {
             if (err.errno === 1452) {
                 return res.status(400).json({ error: "Invalid Package ID." });
             }
-            // Jodi column missing thake (Error 1054), tobe SQL command-ti run korte hobe
+         
             return res.status(500).json({ error: "Database error. Make sure 'guests' and 'amount' columns exist." });
         }
         res.status(201).json({ message: "Booking Successful!", bookingId: result.insertId });
     });
 };
 
-// ২. সব বুকিং লিস্ট দেখা (Admin Side)
+// booking list show (Admin Side)
 exports.getAllBookings = (req, res) => {
     // LEFT JOIN package details anar jonno
     const sql = `
@@ -42,7 +42,7 @@ exports.getAllBookings = (req, res) => {
     });
 };
 
-// ৩. বুকিং স্ট্যাটাস আপডেট
+//   booking status update function (Admin Side)
 exports.updateBookingStatus = (req, res) => {
     const { id } = req.params;
     const { status } = req.body; 
@@ -54,7 +54,7 @@ exports.updateBookingStatus = (req, res) => {
     });
 };
 
-// ৪. বুকিং ডিলিট করা
+// booking delete function (Admin Side) --- IGNORE ---
 exports.deleteBooking = (req, res) => {
     const { id } = req.params;
     const sql = "DELETE FROM bookings WHERE id = ?";

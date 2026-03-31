@@ -16,7 +16,7 @@ router.get('/members-list', (req, res) => {
     });
 });
 
-// ২. মেম্বার সিঙ্ক করার API (Firebase থেকে আসা ডাটা)
+// member sync API (Firebase from data)
 router.post('/sync-member', (req, res) => {
     const { uid, name, email, provider } = req.body;
 

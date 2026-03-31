@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { FaTrash, FaEye, FaChevronLeft, FaChevronRight, FaRoute, FaCalendarAlt, FaClock } from 'react-icons/fa';
+import { BASE_URL } from '../config';
 
 const AdminMessages = () => {
     const [messages, setMessages] = useState([]);
@@ -10,7 +11,7 @@ const AdminMessages = () => {
 
     const fetchMessages = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/contacts');
+            const response = await axios.get(`${BASE_URL}/api/contacts`);
             setMessages(response.data);
         } catch (error) {
             console.error("Error fetching messages:", error);
@@ -21,12 +22,12 @@ const AdminMessages = () => {
         fetchMessages();
     }, []);
 
-    // ২৪ ঘণ্টা চেক করার লজিক
+
     const isNewLead = (createdAt) => {
         const leadDate = new Date(createdAt);
         const now = new Date();
         const diffInHours = (now - leadDate) / (1000 * 60 * 60);
-        return diffInHours < 24; // যদি ২৪ ঘণ্টার কম হয় তবে true
+        return diffInHours < 24; 
     };
 
     // Premium Inquiry Details Popup
@@ -72,7 +73,7 @@ const AdminMessages = () => {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    await axios.delete(`http://localhost:5000/api/contacts/${id}`);
+                    await axios.delete(`${BASE_URL}/${id}`);
                     Swal.fire("Deleted!", "Lead has been removed.", "success");
                     fetchMessages();
                 } catch (error) {
@@ -119,7 +120,7 @@ const AdminMessages = () => {
                                     </div>
                                 </td>
                                 <td className="px-10 py-7">
-                                    {/* স্ট্যাটাস কন্ডিশনাল রেন্ডারিং */}
+                                 
                                     {isNewLead(msg.created_at) ? (
                                         <span className="bg-amber-100 text-amber-600 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border border-amber-200 animate-pulse">
                                             🔥 New Lead

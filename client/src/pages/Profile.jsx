@@ -4,7 +4,10 @@ import { FaCalendarCheck, FaMapMarkerAlt, FaSignOutAlt, FaSuitcase } from 'react
 import toast, { Toaster } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
-const BASE_URL = "http://localhost:5000";
+
+const BASE_URL = window.location.hostname === "localhost" 
+  ? "http://localhost:5000" 
+  : "https://travalia.sourovdev.space/"; 
 
 const Profile = () => {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
@@ -20,7 +23,7 @@ const Profile = () => {
 
     const fetchUserBookings = async () => {
       try {
-        // ডাটাবেস অনুযায়ী ইমেইল ফিল্ড চেক করা হচ্ছে
+    
         const emailToSearch = user.email || user.email_address; 
         
         if (emailToSearch) {
@@ -52,7 +55,7 @@ const Profile = () => {
       <Toaster />
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-10 items-start">
         
-        {/* বাম পাশের ইউজার প্রোফাইল কার্ড */}
+
         <div className="w-full md:w-1/3 bg-[#121418] border border-white/5 p-8 rounded-[40px] text-center shadow-2xl sticky top-10">
           <div className="relative inline-block mb-6">
             <div className="w-28 h-28 bg-gradient-to-tr from-amber-400 to-yellow-200 rounded-full flex items-center justify-center text-black text-5xl font-black shadow-lg">
@@ -85,7 +88,7 @@ const Profile = () => {
           </button>
         </div>
 
-        {/* ডান পাশের বুকিং ইতিহাস */}
+      
         <div className="w-full md:w-2/3">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">

@@ -11,7 +11,9 @@ const ManageBlogs = () => {
     const [formData, setFormData] = useState({ title: '', content: '', image: '' });
     const [imageFile, setImageFile] = useState(null);
 
-    const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = window.location.hostname === "localhost" 
+  ? "http://localhost:5000" 
+  : "https://travalia.sourovdev.space/";
 
     useEffect(() => {
         fetchBlogs();

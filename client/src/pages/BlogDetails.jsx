@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
-
+import { BASE_URL } from '../config';
 const BlogDetails = () => {
     const { id } = useParams();
     const [blog, setBlog] = useState(null);
@@ -10,7 +10,9 @@ const BlogDetails = () => {
     useEffect(() => {
         const fetchBlog = async () => {
             try {
-                const res = await axios.get(`http://localhost:5000/api/blogs/${id}`);
+
+
+                const res = await axios.get(`${BASE_URL}/api/blogs/${id}`);
                 setBlog(res.data);
                 setLoading(false);
             } catch (err) {
@@ -47,16 +49,16 @@ const BlogDetails = () => {
             <section className="py-16 container mx-auto px-6 lg:px-20 max-w-5xl">
                 {/* Full Image */}
                 <div className="rounded-[40px] overflow-hidden shadow-2xl mb-16 h-[500px]">
-                    <img 
-                        src={`http://localhost:5000/Uploads/Blog/${blog.image}`} 
-                        className="w-full h-full object-cover" 
-                        alt={blog.title} 
+                    <img
+                        src={`${BASE_URL}/Uploads/Blog/${blog.image}`}
+                        alt={blog.title}
+                        className="w-full h-full object-cover"
                     />
                 </div>
 
                 {/* Article Content */}
                 <div className="prose prose-lg max-w-none text-slate-600 leading-relaxed font-medium italic">
-                    {/* Database-e jodi HTML thake tobe dangerouslySetInnerHTML use korben */}
+
                     <p className="mb-8">{blog.content}</p>
                 </div>
             </section>
