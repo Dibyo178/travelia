@@ -65,11 +65,6 @@ The project follows a **Client-Server Architecture**:
 git clone https://github.com/yourusername/travalia.git
 cd travalia
 
- 1. Clone the Repository
-```bash
-git clone [https://github.com/yourusername/travalia.git](https://github.com/yourusername/travalia.git)
-cd travalia
-
 ```
 
  2. Backend Configuration
